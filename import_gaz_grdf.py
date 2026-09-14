@@ -3,6 +3,7 @@
 """
 Import consommation gaz journalière GRDF (Gazpar) → Domoticz
 Utilise PyGazpar + Managed Counter
+version 1.0 - 2026-09-14
 """
 
 import pygazpar
