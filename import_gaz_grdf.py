@@ -110,7 +110,6 @@ def main():
         print(f"PCE utilisé : {pce}")
 
     # Téléchargement des données
-    print(f"Téléchargement des {NB_DAYS} derniers jours...")
     try:
         data = client.load_since(
             pce_identifier=pce,
@@ -130,8 +129,7 @@ def main():
     daily.sort(key=lambda x: datetime.strptime(x["time_period"], "%d/%m/%Y"))
 
     last_imported = load_last_date()
-    # print(f"Dernière date déjà importée : {last_imported or 'aucune (premier import)'}")
-    # print(f"Nombre de jours reçus de GRDF : {len(daily)}")
+
 
     to_import = []
     for day in daily:
@@ -176,7 +174,6 @@ def main():
             print("  → arrêt suite à une erreur")
             break
 
-    # print(f"\nTerminé : {success}/{len(to_import)} journée(s) importée(s) avec succès.")
     if success:
         #print(f"Dernière date enregistrée : {to_import[success-1]['date']}")
         pass
