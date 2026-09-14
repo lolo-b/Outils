@@ -30,7 +30,7 @@ IDX_M3  = 143       # ← IDX du Managed Counter "Gas" (m³)
 IDX_KWH = 144       # ← IDX du Managed Counter "Energy" (kWh)
 
 # Combien de jours récupérer (max ~1095)
-NB_DAYS = 1094
+NB_DAYS = 100
 
 # Fichier qui mémorise la dernière date importée
 STATE_FILE = Path(__file__).parent / "last_imported_date.txt"
@@ -77,12 +77,8 @@ def save_last_date(date_str: str):
     STATE_FILE.write_text(date_str)
 
 def main():
-    print("=" * 55)
-    print(" Import Gaz GRDF → Domoticz")
-    print("=" * 55)
 
     # Connexion GRDF
-    print("Connexion à GRDF...")
     try:
         client = pygazpar.Client(
             pygazpar.JsonWebDataSource(
@@ -133,8 +129,8 @@ def main():
     daily.sort(key=lambda x: datetime.strptime(x["time_period"], "%d/%m/%Y"))
 
     last_imported = load_last_date()
-    print(f"Dernière date déjà importée : {last_imported or 'aucune (premier import)'}")
-    print(f"Nombre de jours reçus de GRDF : {len(daily)}")
+    # print(f"Dernière date déjà importée : {last_imported or 'aucune (premier import)'}")
+    # print(f"Nombre de jours reçus de GRDF : {len(daily)}")
 
     to_import = []
     for day in daily:
@@ -155,7 +151,7 @@ def main():
         print("✅ Aucune nouvelle journée à importer.")
         return
 
-    print(f"→ {len(to_import)} nouvelle(s) journée(s) à importer\n")
+    # print(f"→ {len(to_import)} nouvelle(s) journée(s) à importer\n")
 
     success = 0
     for row in to_import:
@@ -166,7 +162,7 @@ def main():
         counter_kwh = -1
         usage_kwh   = row["conso_kwh"] * MULTIPLIER_KWH
 
-        print(f"  {row['date']}  →  {row['conso_m3']:.2f} m³  /  {row['conso_kwh']:.0f} kWh  (coeff {row['coeff']:.2f})")
+        # print(f"  {row['date']}  →  {row['conso_m3']:.2f} m³  /  {row['conso_kwh']:.0f} kWh  (coeff {row['coeff']:.2f})")
 
         ok1 = send_to_domoticz(IDX_M3,  counter_m3,  usage_m3,  row["date"])
         ok2 = send_to_domoticz(IDX_KWH, counter_kwh, usage_kwh, row["date"])
@@ -179,9 +175,9 @@ def main():
             print("  → arrêt suite à une erreur")
             break
 
-    print(f"\nTerminé : {success}/{len(to_import)} journée(s) importée(s) avec succès.")
+    # print(f"\nTerminé : {success}/{len(to_import)} journée(s) importée(s) avec succès.")
     if success:
-        print(f"Dernière date enregistrée : {to_import[success-1]['date']}")
-
+        #print(f"Dernière date enregistrée : {to_import[success-1]['date']}")
+        pass
 if __name__ == "__main__":
     main()
