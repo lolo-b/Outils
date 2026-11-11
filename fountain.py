@@ -50,8 +50,8 @@ def env(name, default, cast=str):
 CAM_URL        = env("CAM_URL", "http://fontaine-cam.local/capture")  # ou IP fixe: http://192.168.1.60/capture
 MQTT_HOST      = env("MQTT_HOST", "localhost")
 MQTT_PORT      = env("MQTT_PORT", 1883, int)
-MQTT_USER      = env("MQTT_USER", "")
-MQTT_PASS      = env("MQTT_PASS", "")
+MQTT_USER      = env("MQTT_USER", "HomeServerMQTT")
+MQTT_PASS      = env("MQTT_PASS", "P@sS#0M€2O22Acc€s")
 
 TOPIC_MOTION     = "fontaine/motion"            # entrée : PIR (ESP32-CAM)
 TOPIC_DETECTION  = "fontaine/detection"         # sortie : "cat=1,person=2,unrecognized=0"
