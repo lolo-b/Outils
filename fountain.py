@@ -74,7 +74,7 @@ CAT_HITS_REQUIRED = env("CAT_HITS_REQUIRED", 2, int)
 COOLDOWN_SECONDS = env("COOLDOWN_SECONDS", 2, float)  # délai minimal entre deux analyses
 CAM_TIMEOUT      = env("CAM_TIMEOUT", 2.0, float)
 
-SAVE_DIR       = Path(env("SAVE_DIR", "/home/pi/fontaine/data"))
+SAVE_DIR       = Path(env("SAVE_DIR", "/home/pi/Outils/data_foutain"))
 SAVE_SAMPLES   = env("SAVE_SAMPLES", "1") == "1"            # images de la rafale (pour fine-tuning)
 RETENTION_DAYS = env("RETENTION_DAYS", 14, int)
 # =======================================================================
