@@ -54,10 +54,10 @@ def push_to_domoticz(counter_liters: int, usage_liters: int, date_str: str) -> N
         print(f"  → Erreur envoi Domoticz ({date_str}) : {e}", file=sys.stderr)
         
 async def main() -> None:
-    print("Connexion à L'Eau d'Île-de-France...")
+    ### print("Connexion à L'Eau d'Île-de-France...")
     async with EauIDFClient(EMAIL, PASSWORD) as client:
         await client.login()
-        print("Connexion réussie.")
+        ### print("Connexion réussie.")
 
         end = date.today()
         start = end - timedelta(days=NB_JOURS)
@@ -71,7 +71,7 @@ async def main() -> None:
             print("Aucune donnée de consommation trouvée.")
             return
 
-        print(f"\n{len(result.records)} jour(s) récupéré(s). Envoi vers Domoticz (idx={DOMOTICZ_IDX})...\n")
+        ##print(f"\n{len(result.records)} jour(s) récupéré(s). Envoi vers Domoticz (idx={DOMOTICZ_IDX})...\n")
 
         for record in sorted(result.records, key=lambda r: r.date):
             # Date
@@ -95,10 +95,9 @@ async def main() -> None:
                 continue
 
             estimated = " (estimé)" if getattr(record, "is_estimated", False) else ""
-            print(f"{date_str} : {usage_liters} L{estimated}")
+            ## print(f"{date_str} : {usage_liters} L{estimated}")
             push_to_domoticz(counter_liters, usage_liters, date_str)
 
-        print("\nTerminé.")
 
 if __name__ == "__main__":
     asyncio.run(main())
