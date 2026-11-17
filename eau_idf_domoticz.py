@@ -2,12 +2,17 @@
 """
 Récupère la consommation d'eau journalière L'Eau d'Île-de-France
 et l'envoie dans Domoticz (Managed Counter).
+
+Seules les erreurs sont écrites dans les logs (stderr).
+
+Version 2026.11.17
 """
 
 import asyncio
-import requests
 import sys
 from datetime import date, timedelta
+
+import requests
 from pyeauidf import EauIDFClient
 
 # ==================== CONFIGURATION ====================
@@ -47,57 +52,53 @@ def push_to_domoticz(counter_liters: int, usage_liters: int, date_str: str) -> N
         data = resp.json()
 
         if data.get("status") != "OK":
-            print(f"  → ERREUR Domoticz pour {date_str} : {data}", file=sys.stderr)
-        else:
-            print(f"  → {date_str} : index={counter_liters} L, conso={usage_liters} L : OK")
+            print(f"ERREUR Domoticz pour {date_str} : {data}", file=sys.stderr)
     except Exception as e:
-        print(f"  → Erreur envoi Domoticz ({date_str}) : {e}", file=sys.stderr)
-        
+        print(f"Erreur envoi Domoticz ({date_str}) : {e}", file=sys.stderr)
+
+
 async def main() -> None:
-    ### print("Connexion à L'Eau d'Île-de-France...")
-    async with EauIDFClient(EMAIL, PASSWORD) as client:
-        await client.login()
-        ### print("Connexion réussie.")
+    try:
+        async with EauIDFClient(EMAIL, PASSWORD) as client:
+            await client.login()
 
-        end = date.today()
-        start = end - timedelta(days=NB_JOURS)
+            end = date.today()
+            start = end - timedelta(days=NB_JOURS)
 
-        result = await client.get_daily_consumption(
-            start_date=start,
-            end_date=end,
-        )
+            result = await client.get_daily_consumption(
+                start_date=start,
+                end_date=end,
+            )
 
-        if not result.records:
-            print("Aucune donnée de consommation trouvée.")
-            return
+            if not result.records:
+                return  # Pas de données : pas considéré comme une erreur
 
-        ##print(f"\n{len(result.records)} jour(s) récupéré(s). Envoi vers Domoticz (idx={DOMOTICZ_IDX})...\n")
+            for record in sorted(result.records, key=lambda r: r.date):
+                # Date
+                d = record.date.date() if hasattr(record.date, "date") else record.date
+                date_str = d.isoformat()
 
-        for record in sorted(result.records, key=lambda r: r.date):
-            # Date
-            d = record.date.date() if hasattr(record.date, "date") else record.date
-            date_str = d.isoformat()
+                # Consommation du jour (litres)
+                usage_liters = int(round(record.consumption_liters))
 
-            # Consommation du jour (litres)
-            usage_liters = int(round(record.consumption_liters))
+                # Index cumulé
+                if record.meter_reading is None:
+                    print(f"{date_str} : pas d'index compteur, ignoré", file=sys.stderr)
+                    continue
 
-            # Index cumulé : pyeauidf renvoie meter_reading en m³ → conversion en litres
-            # (comme dans ton CSV fournisseur qui est en litres)
-            if record.meter_reading is not None:
-                # Si la valeur est petite (< 100000), on suppose des m³
+                # Si la valeur est petite (< 100000), on suppose des m³ → litres
                 if record.meter_reading < 100000:
                     counter_liters = int(round(record.meter_reading * 1000))
                 else:
                     # Déjà en litres
                     counter_liters = int(round(record.meter_reading))
-            else:
-                print(f"  → {date_str} : pas d'index compteur, ignoré")
-                continue
 
-            estimated = " (estimé)" if getattr(record, "is_estimated", False) else ""
-            ## print(f"{date_str} : {usage_liters} L{estimated}")
-            push_to_domoticz(counter_liters, usage_liters, date_str)
+                push_to_domoticz(counter_liters, usage_liters, date_str)
+    except Exception as e:
+        print(f"Erreur L'Eau d'Île-de-France : {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
     asyncio.run(main())
+
